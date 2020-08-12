@@ -1,8 +1,10 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns="sap.m" displayBlock="true" height="100%" controllerName="opensap.myapp.controller.App">
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns="sap.m"
+	displayBlock="true" height="100%" controllerName="opensap.myapp.controller.App">
 	<App>
-		<pages><Page title="openSAP - Developing with SAPUI5">
+		<pages>
+			<Page title="openSAP - Developing with SAPUI5">
 				<content>
-					<IconTabBar id="idTopLevelIconTabBar" class="sapUiResponsiveContentPadding">
+					<IconTabBar id="idTopLevelIconTabBar" selectedKey="db" class="sapUiResponsiveContentPadding">
 						<items>
 							<IconTabFilter id="start" text="{i18n>gettingStartedFilter}">
 								<Carousel>
@@ -12,7 +14,9 @@
 									</pages>
 								</Carousel>
 								<Button text="{i18n>showHelloButtonText}" press="onShowHello" icon="sap-icon://activate" type="Accept"/>
-								<Input value="{helloPanel>/recipient/name}" description="Hello {helloPanel>/recipient/name}" valueLiveUpdate="true" width="60%"/>
+								<Input
+									value="{ path: 'helloPanel>/recipient/name', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: false}, constraints: { maximum: 3000 } }"
+									description="Hello {helloPanel>/recipient/name}" valueLiveUpdate="false" width="60%"/>
 							</IconTabFilter>
 							<IconTabFilter id="layouts" text="{i18n>layoutFilter}">
 								<MessageStrip type="Information" showIcon="true" text="Here's a Form Layout inside an Icon Tab Bar …"/>
@@ -43,6 +47,82 @@
 									<Button text="{i18n>layoutPublishButton}" type="Accept" icon="sap-icon://outbox"/>
 									<Button text="{i18n>layoutDraftButton}" icon="sap-icon://save"/>
 								</Toolbar>
+							</IconTabFilter>
+							<IconTabFilter text="{i18n>dataBindingFilter}" key="db1">
+								<content>
+									<List id="productsList"
+										items="{ path : '/ProductSet', sorter : { path : 'Category', group : true }, parameters: { expand : 'ToSupplier' } }" growing="true"
+										growingThreshold="5" growingScrollToLoad="false" mode="SingleSelectMaster" selectionChange="onItemSelected">
+										<headerToolbar>
+											<Toolbar>
+												<Title text="{i18n>productListTitle}"/>
+												<ToolbarSpacer/>
+												<SearchField width="20%" search="onFilterProducts"/>
+											</Toolbar>
+										</headerToolbar>
+										<items >
+											<ObjectListItem type="Active" title="{Name}"
+												number="{ parts: [ {path: 'Price'}, {path: 'CurrencyCode'} ], type: 'sap.ui.model.type.Currency', formatOptions: { showMeasure: false } }"
+												numberState="{= ${Price} > 500 ? 'Error' : 'Success' }" intro="{ProductID}" numberUnit="{CurrencyCode}">
+												<firstStatus>
+													<ObjectStatus text="{ parts :[ {path: 'WeightMeasure'}, {path: 'WeightUnit'} ], formatter : '.formatter.delivery' }"/>
+												</firstStatus>
+												<secondStatus>
+													<ObjectStatus title="{i18n>statusDeliveryFrom}" text="{ToSupplier/Address/City}"/>
+												</secondStatus>
+												<markers>
+													<ObjectMarker type="{= ${Price} > 500 ? 'Flagged' : 'Favorite'}"/>
+												</markers>
+											</ObjectListItem>
+										</items>
+									</List>
+									<Panel id="productDetailsPanel" headerText="Product Details" visible="false">
+										<l:Grid>
+											<Text text="{i18n>productDetailPanelID}: {ProductID}"/>
+											<Text text="{i18n>productDetailPanelName}: {Name}"/>
+											<Text text="{i18n>productDetailPanelDescription}: {Description}"/>
+											<Text text="{i18n>productDetailPanelPrice}: {Price}"/>
+										</l:Grid>
+									</Panel>
+								</content>
+							</IconTabFilter>
+							<IconTabFilter text="{i18n>dataBindingFilterSd}" key="db">
+								<content>
+									<List id="salesOrderList"
+										items="{ path : '/SalesOrderSet', sorter : { path : 'CustomerName', group : true }, parameters: { expand : 'ToLineItems' }}"
+										growing="true" growingThreshold="4" growingScrollToLoad="false" mode="SingleSelectMaster" selectionChange="onSDItemSelected">
+										<headerToolbar>
+											<Toolbar>
+												<Title text="{i18n>orderListTitle}"/>
+												<ToolbarSpacer/>
+												<SearchField width="20%" search="onFilterOrders"/>
+											</Toolbar>
+										</headerToolbar>
+										<items>
+											<ObjectListItem type="Active" title="Order {SalesOrderID}"
+												number="{ path: 'CreatedAt', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'dd.MM.yyyy' } }" numberUnit="{Quantity}">
+												<firstStatus>
+													<ObjectStatus text="{parts: [{path: 'DeliveryStatus'}],formatter: '.formatter.orders' }"
+														state="{parts: [{path: 'DeliveryStatus'}],formatter: '.formatter.status' }"/>
+												</firstStatus>
+												<ObjectAttribute text="{CustomerName}"/>
+												<ObjectAttribute text="Shipped: {path: 'ChangedAt', type: 'sap.ui.model.type.Date', formatOptions: { style: 'medium' } }"/>
+											</ObjectListItem>
+										</items>
+									</List>
+									<Panel id="salesOrdersPanel" visible="false">
+									  <List id="ItemPosition" items="{ToLineItems}" headerText="{SalesOrderID} items:">
+									  	  <items>
+									  	  	<ObjectListItem title="{Note}" number="{TaxAmount} {CurrencyCode}">
+									  	  	  <firstStatus>
+									  	  	  	<ObjectStatus text="Quantity: {Quantity} {path: 'QuantityUnit' , formatter: 'sap.m.sample.ObjectListItemMarkLocked.Formatter.intBoolRandomizer'}"/>
+									  	  	  </firstStatus>	
+									  	  	  <ObjectAttribute text="{ProductID}"/>
+									  	  	</ObjectListItem>
+									  	  </items>
+									  </List>
+									</Panel>
+								</content>
 							</IconTabFilter>
 						</items>
 					</IconTabBar>
